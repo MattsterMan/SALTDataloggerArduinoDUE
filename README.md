@@ -1,4 +1,5 @@
-This program is designed to capture and log in-flight data for a Level 3 Model Rocket using an Arduino DUE.<br>
+This program is designed to capture and log in-flight data for a Level 3 Model Rocket using an Arduino DUE.
+
 Boards:
 - Arduino DUE
 - Adafruit BME280 I2C or SPI Temperature Humidity Pressure Sensor

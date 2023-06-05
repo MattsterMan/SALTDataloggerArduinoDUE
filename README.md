@@ -6,10 +6,10 @@ Boards:
 - Adafruit ADXL345 - Triple-Axis Accelerometer (+-2g/4g/8g/16g) w/ I2C/SPI
 - MicroSD Card Breakout Board
 
-1. [[#^681b62|Installation]]
-2. [[#^b74e26|Technical Details]]
+1. [Installation](#Installation)
+2. [Technical Details](#Technical-Details)
 
-**Installation** ^681b62
+#Installation 
 
 I am using Jetbrains CLion for development, therefore installation instructions follow that process. 
 
@@ -33,7 +33,7 @@ I am using Jetbrains CLion for development, therefore installation instructions 
 	3. Click **Apply** and then **OK**.
 7. You are now correctly setup to build and upload the current project to an Arduino DUE using the programming USB Port.<br>
 
-**Technical Details:** ^b74e26
+#Technical-Details
 
 The purpose of this program is to efficiently and safely communicate with a multitude of sensors, temporarily store their readings in separate arrays, and then write the contents of each array to a microsd card.
 

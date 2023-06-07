@@ -26,7 +26,7 @@ void setup() {
     Serial.println("Initializing BME280...");
 
     unsigned status;
-    // initializes the BME280
+    // Initializes the BME280
     status = bme.begin();
     if (!status) {
         Serial.println("Could not find a valid BME280 sensor, check wiring, address, sensor ID!");

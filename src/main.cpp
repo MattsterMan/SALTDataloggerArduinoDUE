@@ -10,6 +10,7 @@
 #define CHIPSELECT 4
 #define DATABUFFERSIZE 50
 #define GPSSerial Serial1
+#define telemetry Serial2
 #define GPSECHO true
 
 double altitudeBuffer[DATABUFFERSIZE] = {};
@@ -26,7 +27,7 @@ float accelerationXBuffer[DATABUFFERSIZE] = {};
 float accelerationYBuffer[DATABUFFERSIZE] = {};
 float accelerationZBuffer[DATABUFFERSIZE] = {};
 
-char printfBuffer[120];
+char printfBuffer[150];
 const int START_BUTTON = 7;
 const int END_BUTTON = 3;
 uint32_t timer = millis();

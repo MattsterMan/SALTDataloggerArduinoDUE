@@ -28,8 +28,11 @@ float accelerationYBuffer[DATABUFFERSIZE] = {};
 float accelerationZBuffer[DATABUFFERSIZE] = {};
 
 char printfBuffer[150];
-const int START_BUTTON = 7;
-const int END_BUTTON = 3;
+const int SE_BUTTON = 3;
+bool accel = true;
+unsigned int filenum = 1;
+char filename[16];
+bool sd = true;
 uint32_t timer = millis();
 
 Adafruit_BME280 bme; // I2C
@@ -38,9 +41,9 @@ Adafruit_LIS3DH lis = Adafruit_LIS3DH(); // I2C
 
 void setup() {
     Serial.begin(115200);
-    pinMode(START_BUTTON, INPUT_PULLUP);
+    pinMode(SE_BUTTON, INPUT_PULLUP);
     while(!Serial);
-    while(digitalRead(START_BUTTON) == HIGH);    // time to get serial running and button pressed
+    while(digitalRead(SE_BUTTON) == HIGH);    // time to get serial running and button pressed
 
     Serial.println("Initializing BME280...");
     if (!bme.begin()) {
@@ -51,13 +54,17 @@ void setup() {
 
     Serial.println("Initializing LIS3DH...");
     if (!lis.begin(0x18)) {   // change this to 0x19 for alternative i2c address
+        accel = false;
         Serial.println("Could not find a valid LIS3DH sensor, check wiring, address, sensor ID!");
-        exit(0);
+        Serial.print("Accelerometer: ");
+        Serial.println(accel);
     }
-    lis.setRange(LIS3DH_RANGE_16_G);
-    Serial.print("Range = "); Serial.print(2 << lis.getRange());
-    Serial.println("G");
-    Serial.println("Initialized LIS3DH.");
+    if (accel){
+        lis.setRange(LIS3DH_RANGE_16_G);
+        Serial.print("Range = "); Serial.print(2 << lis.getRange());
+        Serial.println("G");
+        Serial.println("Initialized LIS3DH.");
+    }
 
     Serial.println("Initializing SD card...");
     // see if the card is present and can be initialized:
@@ -66,17 +73,13 @@ void setup() {
         // don't do anything more:
         exit(0);
     }
-    Serial.println("Initialized SD card.");
-    // add headings for data in the datalog file
-    File dataFile = SD.open("datalog.csv", FILE_WRITE);
-    if (dataFile) {
-        dataFile.println("BME Altitude (m), Temperature (C), Pressure (kpa), Humidity (%), Fix (bool), Longitude (N/S), Latitude (E/W), Speed (knots), Angle (degrees), GPS Altitude (m), Accel (X), Accel (Y), Accel (Z)");
-        dataFile.close();
-        Serial.println("Headers Created");
-    }
-    else {
-        Serial.println("error opening datalog.csv");
-        exit(0);
+
+    while (filenum != 0){
+        sprintf(filename, "%03d.csv", filenum);
+        if (SD.exists(filename) == false) break;
+        Serial.print(filename);
+        Serial.println(" exists.");
+        filenum++;
     }
 
     // begin serial connection using hardware serial of GPS
@@ -91,7 +94,20 @@ void setup() {
 }
 
 void writeToSD() {
-    File dataFile = SD.open("datalog.csv", FILE_WRITE);
+    if (sd) {
+        File dataFile = SD.open(filename, FILE_WRITE);
+        if (dataFile) {
+            dataFile.println("BME Altitude (m), Temperature (C), Pressure (kpa), Humidity (%), Fix (bool), Longitude (N/S), Latitude (E/W), Speed (knots), Angle (degrees), GPS Altitude (m), Accel (X), Accel (Y), Accel (Z)");
+            dataFile.close();
+            Serial.println("Headers Created");
+        }
+        else {
+            Serial.println("error opening file.");
+        }
+        sd = false;
+    }
+
+    File dataFile = SD.open(filename, FILE_WRITE);
     if (dataFile) {
         for (int i = 0; i < DATABUFFERSIZE; ++i) {
             sprintf(printfBuffer, "%.2f, %.2f, %.2f, %.2f, %i, %.6f, %.6f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f",
@@ -114,7 +130,7 @@ void writeToSD() {
         Serial.println("Write Successful");
     }
     else {
-        Serial.println("error opening datalog.csv");
+        Serial.println("error opening file.");
     }
 }
 
@@ -144,9 +160,11 @@ void writeToDataBuffer() {
         speedBuffer[i] = GPS.speed;
         angleBuffer[i] = GPS.angle;
         altitudeGPSBuffer[i] = GPS.altitude;
-        accelerationXBuffer[i] = event.acceleration.x;
-        accelerationYBuffer[i] = event.acceleration.y;
-        accelerationZBuffer[i] = event.acceleration.z;
+        if (accel) {
+            accelerationXBuffer[i] = event.acceleration.x;
+            accelerationYBuffer[i] = event.acceleration.y;
+            accelerationZBuffer[i] = event.acceleration.z;
+        }
         sprintf(printfBuffer, "%d: %.2f m, %.2f C, %.2f kpa, %.2f %%, %i, %.6f, %.6f, %.2f knots, %.2f degrees, %.2f m, %.2f m/s^2, %.2f m/s^2, %.2f m/s^2",
                 index,
                 altitudeBuffer[i],
@@ -173,7 +191,7 @@ void loop() {
     digitalWrite(LED_BUILTIN, HIGH);
     writeToDataBuffer();
     writeToSD();
-    if (digitalRead(END_BUTTON) == LOW) {
+    if (digitalRead(SE_BUTTON) == LOW) {
         exit(0);
     }
     //callToGPS();

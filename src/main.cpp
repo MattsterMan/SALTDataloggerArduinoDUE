@@ -33,6 +33,7 @@ bool accel = true;
 unsigned int filenum = 1;
 char filename[16];
 bool sd = true;
+char telembuf[50];
 uint32_t timer = millis();
 
 Adafruit_BME280 bme; // I2C
@@ -89,6 +90,8 @@ void setup() {
     GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); //1HZ recommended for parsing data
     GPS.sendCommand(PGCMD_ANTENNA);
     GPSSerial.println(PMTK_Q_RELEASE);
+
+    telemetry.begin(57600);
 
     delay(1000);
 }
@@ -181,6 +184,7 @@ void writeToDataBuffer() {
                 accelerationYBuffer[i],
                 accelerationZBuffer[i]);
         Serial.println(printfBuffer);
+        telemetry.println(printfBuffer);
         index++;
 
         delay(DELAYTIME);
@@ -188,9 +192,15 @@ void writeToDataBuffer() {
 }
 
 void loop() {
+    if (telemetry.available() > 0) {
+        int len = telemetry.readBytes(telembuf, 50);
+        for (int i = 0; i < len; ++i) {
+            Serial.print(telembuf[i]);
+        }
+    }
     digitalWrite(LED_BUILTIN, HIGH);
-    writeToDataBuffer();
-    writeToSD();
+    //writeToDataBuffer();
+    //writeToSD();
     if (digitalRead(SE_BUTTON) == LOW) {
         exit(0);
     }

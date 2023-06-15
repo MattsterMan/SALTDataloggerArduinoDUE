@@ -27,14 +27,14 @@ float accelerationXBuffer[DATABUFFERSIZE] = {};
 float accelerationYBuffer[DATABUFFERSIZE] = {};
 float accelerationZBuffer[DATABUFFERSIZE] = {};
 
-char printfBuffer[150];
+char printfBuffer[170];
 const int SE_BUTTON = 3;
 bool accel = true;
 unsigned int filenum = 1;
 char filename[16];
 bool sd = true;
 char telembuf[50];
-uint32_t timer = millis();
+uint32_t timer = millis() / 1000;
 
 Adafruit_BME280 bme; // I2C
 Adafruit_GPS GPS(&GPSSerial);
@@ -100,20 +100,23 @@ void writeToSD() {
     if (sd) {
         File dataFile = SD.open(filename, FILE_WRITE);
         if (dataFile) {
-            dataFile.println("BME Altitude (m), Temperature (C), Pressure (kpa), Humidity (%), Fix (bool), Longitude (N/S), Latitude (E/W), Speed (knots), Angle (degrees), GPS Altitude (m), Accel (X), Accel (Y), Accel (Z)");
+            dataFile.println("BME Altitude (m), Temperature (C), Pressure (kpa), Humidity (%), Fix (bool), Longitude (N/S), Latitude (E/W), Speed (knots), Angle (degrees), GPS Altitude (m), Accel (X), Accel (Y), Accel (Z), Timer (s)");
             dataFile.close();
             Serial.println("Headers Created");
+            telemetry.println("Headers Created");
         }
         else {
             Serial.println("error opening file.");
+            telemetry.println("error opening file.");
         }
         sd = false;
+        delay(1000);
     }
 
     File dataFile = SD.open(filename, FILE_WRITE);
     if (dataFile) {
         for (int i = 0; i < DATABUFFERSIZE; ++i) {
-            sprintf(printfBuffer, "%.2f, %.2f, %.2f, %.2f, %i, %.6f, %.6f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f",
+            sprintf(printfBuffer, "%.2f, %.2f, %.2f, %.2f, %i, %.6f, %.6f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2lu",
                     altitudeBuffer[i],
                     temperatureBuffer[i],
                     pressureBuffer[i],
@@ -126,14 +129,17 @@ void writeToSD() {
                     altitudeGPSBuffer[i],
                     accelerationXBuffer[i],
                     accelerationYBuffer[i],
-                    accelerationZBuffer[i]);
+                    accelerationZBuffer[i],
+                    timer);
             dataFile.println(printfBuffer);
         }
         dataFile.close();
         Serial.println("Write Successful");
+        telemetry.println("Write Successful");
     }
     else {
         Serial.println("error opening file.");
+        telemetry.println("error opening file.");
     }
 }
 
@@ -168,7 +174,7 @@ void writeToDataBuffer() {
             accelerationYBuffer[i] = event.acceleration.y;
             accelerationZBuffer[i] = event.acceleration.z;
         }
-        sprintf(printfBuffer, "%d: %.2f m, %.2f C, %.2f kpa, %.2f %%, %i, %.6f, %.6f, %.2f knots, %.2f degrees, %.2f m, %.2f m/s^2, %.2f m/s^2, %.2f m/s^2",
+        sprintf(printfBuffer, "%d: %.2f m, %.2f C, %.2f kpa, %.2f %%, %i, %.6f, %.6f, %.2f knots, %.2f degrees, %.2f m, %.2f m/s^2, %.2f m/s^2, %.2f m/s^2, %.2lu",
                 index,
                 altitudeBuffer[i],
                 temperatureBuffer[i],
@@ -182,7 +188,8 @@ void writeToDataBuffer() {
                 altitudeGPSBuffer[i],
                 accelerationXBuffer[i],
                 accelerationYBuffer[i],
-                accelerationZBuffer[i]);
+                accelerationZBuffer[i],
+                timer);
         Serial.println(printfBuffer);
         telemetry.println(printfBuffer);
         index++;
@@ -192,14 +199,6 @@ void writeToDataBuffer() {
 }
 
 void loop() {
-
-    /*if (telemetry.available() > 0) {
-        int len = telemetry.readBytes(telembuf, 50);
-        for (int i = 0; i < len; ++i) {
-            Serial.print(telembuf[i]);
-        }
-    }*/
-
     digitalWrite(LED_BUILTIN, HIGH);
 
     writeToDataBuffer();

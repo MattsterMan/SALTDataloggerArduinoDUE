@@ -34,7 +34,7 @@ unsigned int filenum = 1;
 char filename[16];
 bool sd = true;
 char telembuf[50];
-uint32_t timer = millis() / 1000;
+float timer = millis() / 1000;
 
 Adafruit_BME280 bme; // I2C
 Adafruit_GPS GPS(&GPSSerial);
@@ -116,7 +116,7 @@ void writeToSD() {
     File dataFile = SD.open(filename, FILE_WRITE);
     if (dataFile) {
         for (int i = 0; i < DATABUFFERSIZE; ++i) {
-            sprintf(printfBuffer, "%.2f, %.2f, %.2f, %.2f, %i, %.6f, %.6f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2lu",
+            sprintf(printfBuffer, "%.2f, %.2f, %.2f, %.2f, %i, %.6f, %.6f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.3f",
                     altitudeBuffer[i],
                     temperatureBuffer[i],
                     pressureBuffer[i],
@@ -174,7 +174,7 @@ void writeToDataBuffer() {
             accelerationYBuffer[i] = event.acceleration.y;
             accelerationZBuffer[i] = event.acceleration.z;
         }
-        sprintf(printfBuffer, "%d: %.2f m, %.2f C, %.2f kpa, %.2f %%, %i, %.6f, %.6f, %.2f knots, %.2f degrees, %.2f m, %.2f m/s^2, %.2f m/s^2, %.2f m/s^2, %.2lu",
+        sprintf(printfBuffer, "%d: %.2f m, %.2f C, %.2f kpa, %.2f %%, %i, %.6f, %.6f, %.2f knots, %.2f degrees, %.2f m, %.2f m/s^2, %.2f m/s^2, %.2f m/s^2, %.3f",
                 index,
                 altitudeBuffer[i],
                 temperatureBuffer[i],

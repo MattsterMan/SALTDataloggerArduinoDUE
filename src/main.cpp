@@ -5,7 +5,7 @@
 #include <Adafruit_LIS3DH.h>
 #include <Adafruit_Sensor.h>
 
-#define SEALEVELPRESSURE_HPA (1007.00)
+#define SEALEVELPRESSURE_HPA (865.56)
 #define DELAYTIME 50
 #define CHIPSELECT 4
 #define DATABUFFERSIZE 50
@@ -49,30 +49,39 @@ void setup() {
     //while(digitalRead(SE_BUTTON) == HIGH);    // time to get serial running and button pressed
 
     Serial.println("Initializing BME280...");
+    telemetry.println("Initializing BME280...");
     if (!bme.begin()) {
         Serial.println("Could not find a valid BME280 sensor, check wiring, address, sensor ID!");
+        telemetry.println("Could not find a valid BME280 sensor, check wiring, address, sensor ID!");
         exit(0);
     }
     Serial.println("Initialized BME280.");
+    telemetry.println("Initialized BME280.");
 
     Serial.println("Initializing LIS3DH...");
+    telemetry.println("Initializing LIS3DH...");
     if (!lis.begin(0x18)) {   // change this to 0x19 for alternative i2c address
         accel = false;
         Serial.println("Could not find a valid LIS3DH sensor, check wiring, address, sensor ID!");
+        telemetry.println("Could not find a valid LIS3DH sensor, check wiring, address, sensor ID!");
         Serial.print("Accelerometer: ");
         Serial.println(accel);
     }
     if (accel){
         lis.setRange(LIS3DH_RANGE_16_G);
         Serial.print("Range = "); Serial.print(2 << lis.getRange());
+        telemetry.print("Range = "); Serial.print(2 << lis.getRange());
         Serial.println("G");
         Serial.println("Initialized LIS3DH.");
+        telemetry.println("Initialized LIS3DH.");
     }
 
     Serial.println("Initializing SD card...");
+    telemetry.println("Initializing SD card...");
     // see if the card is present and can be initialized:
     if (!SD.begin(CHIPSELECT)) {
         Serial.println("Card failed, or not present");
+        telemetry.println("Card failed, or not present");
         // don't do anything more:
         exit(0);
     }
@@ -82,6 +91,8 @@ void setup() {
         if (SD.exists(filename) == false) break;
         Serial.print(filename);
         Serial.println(" exists.");
+        telemetry.print(filename);
+        telemetry.println(" exists.");
         filenum++;
     }
 
